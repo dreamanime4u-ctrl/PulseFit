@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-
   workflow_dispatch:
 
 permissions:
@@ -40,7 +39,7 @@ jobs:
           sdkmanager "build-tools;35.0.0"
 
       - name: Build Debug APK
-        run: gradle --no-daemon clean assembleDebug
+        run: gradle --no-daemon clean assembleDebug --stacktrace
 
       - name: Upload PulseFit APK
         uses: actions/upload-artifact@v4
