@@ -1,0 +1,381 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>PulseFit</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #101827;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0 30px;
+}
+
+.logo {
+  font-size: 27px;
+  font-weight: bold;
+}
+
+.logo span {
+  color: #35dfaa;
+}
+
+.profile {
+  background: #243449;
+  padding: 12px;
+  border-radius: 50%;
+  font-size: 22px;
+}
+
+.greeting {
+  color: #aab8c8;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 23px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #1c293b;
+  padding: 22px;
+  border-radius: 22px;
+  margin-bottom: 18px;
+}
+
+.steps-card {
+  text-align: center;
+  border: 1px solid #34465b;
+}
+
+.steps-label {
+  color: #aab8c8;
+  font-size: 17px;
+}
+
+.steps-number {
+  font-size: 53px;
+  font-weight: bold;
+  color: #35dfaa;
+  margin: 15px 0 5px;
+}
+
+.goal {
+  color: #aab8c8;
+  font-size: 14px;
+}
+
+.progress {
+  background: #34465b;
+  height: 10px;
+  border-radius: 20px;
+  margin: 22px 0 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: #35dfaa;
+  width: 0%;
+  height: 100%;
+  transition: width .3s;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.stat {
+  background: #1c293b;
+  padding: 22px 15px;
+  border-radius: 18px;
+}
+
+.stat-icon {
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+.stat-title {
+  color: #aab8c8;
+  font-size: 14px;
+}
+
+.stat-value {
+  font-size: 25px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+button {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.start {
+  background: #35dfaa;
+  color: #101827;
+}
+
+.reset {
+  background: #34465b;
+  color: white;
+}
+
+.status {
+  text-align: center;
+  color: #aab8c8;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  color: #718096;
+  margin-top: 35px;
+  font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Pulse<span>Fit</span></div>
+  <div class="profile">🏃</div>
+</header>
+
+<p class="greeting">مرحباً بك في PulseFit 👋</p>
+<h2>ملخص نشاطك اليومي</h2>
+
+<div class="card steps-card">
+  <div class="steps-label">👟 إجمالي الخطوات</div>
+  <div class="steps-number" id="steps">0</div>
+  <div class="goal">الهدف اليومي: 10,000 خطوة</div>
+
+  <div class="progress">
+    <div class="progress-fill" id="progress"></div>
+  </div>
+
+  <div class="goal" id="percentage">0% من هدفك اليومي</div>
+</div>
+
+<div class="stats">
+
+  <div class="stat">
+    <div class="stat-icon">📍</div>
+    <div class="stat-title">المسافة</div>
+    <div class="stat-value"><span id="distance">0.00</span> km</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">🔥</div>
+    <div class="stat-title">السعرات الحرارية</div>
+    <div class="stat-value"><span id="calories">0</span> kcal</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">⏱️</div>
+    <div class="stat-title">الحالة</div>
+    <div class="stat-value" id="activity">متوقف</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-icon">🎯</div>
+    <div class="stat-title">الخطوات المتبقية</div>
+    <div class="stat-value" id="remaining">10,000</div>
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="start" id="startBtn" onclick="startCounter()">
+    ▶ ابدأ
+  </button>
+
+  <button class="reset" onclick="resetCounter()">
+    ↻ إعادة
+  </button>
+</div>
+
+<div class="status" id="status">
+  اضغط على ابدأ للسماح ببدء قياس الحركة.
+</div>
+
+<footer>
+  PulseFit © 2026 — Your Health, Your Journey
+</footer>
+
+<script>
+let steps = 0;
+let running = false;
+let lastStepTime = 0;
+let previousMagnitude = 0;
+let smoothed = 0;
+let sensorReady = false;
+
+const goal = 10000;
+
+function updateUI() {
+  document.getElementById("steps").textContent =
+    steps.toLocaleString("en-US");
+
+  let distance = steps * 0.00075;
+  let calories = steps * 0.04;
+
+  document.getElementById("distance").textContent =
+    distance.toFixed(2);
+
+  document.getElementById("calories").textContent =
+    Math.round(calories);
+
+  document.getElementById("remaining").textContent =
+    Math.max(0, goal - steps).toLocaleString("en-US");
+
+  let percent = Math.min(100, steps / goal * 100);
+
+  document.getElementById("progress").style.width =
+    percent + "%";
+
+  document.getElementById("percentage").textContent =
+    Math.round(percent) + "% من هدفك اليومي";
+}
+
+function detectMotion(event) {
+  if (!running) return;
+
+  const a = event.accelerationIncludingGravity;
+
+  if (!a || a.x === null || a.y === null || a.z === null) {
+    return;
+  }
+
+  let magnitude = Math.sqrt(
+    a.x * a.x + a.y * a.y + a.z * a.z
+  );
+
+  smoothed = smoothed * 0.8 + magnitude * 0.2;
+
+  let change = Math.abs(smoothed - previousMagnitude);
+  let now = Date.now();
+
+  if (change > 1.5 && now - lastStepTime > 400) {
+    steps++;
+    lastStepTime = now;
+    updateUI();
+  }
+
+  previousMagnitude = smoothed;
+}
+
+async function startCounter() {
+  if (running) return;
+
+  if (!window.DeviceMotionEvent) {
+    document.getElementById("status").textContent =
+      "مستشعر الحركة غير مدعوم في هذا المتصفح.";
+    return;
+  }
+
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === "function") {
+      const permission =
+        await DeviceMotionEvent.requestPermission();
+
+      if (permission !== "granted") {
+        document.getElementById("status").textContent =
+          "يرجى السماح بالوصول إلى مستشعر الحركة.";
+        return;
+      }
+    }
+
+    if (!sensorReady) {
+      window.addEventListener("devicemotion", detectMotion);
+      sensorReady = true;
+    }
+
+    running = true;
+
+    document.getElementById("activity").textContent =
+      "يعمل";
+
+    document.getElementById("status").textContent =
+      "جاري قياس الحركة...";
+
+    document.getElementById("startBtn").textContent =
+      "⏸ إيقاف";
+
+    document.getElementById("startBtn").onclick =
+      pauseCounter;
+
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "تعذر تشغيل المستشعر. تحقق من أذونات المتصفح.";
+  }
+}
+
+function pauseCounter() {
+  running = false;
+
+  document.getElementById("activity").textContent =
+    "متوقف";
+
+  document.getElementById("status").textContent =
+    "تم إيقاف العدّ مؤقتاً.";
+
+  document.getElementById("startBtn").textContent =
+    "▶ متابعة";
+
+  document.getElementById("startBtn").onclick =
+    startCounter;
+}
+
+function resetCounter() {
+  pauseCounter();
+
+  steps = 0;
+  updateUI();
+
+  document.getElementById("status").textContent =
+    "تمت إعادة العداد إلى الصفر.";
+
+  document.getElementById("startBtn").textContent =
+    "▶ ابدأ";
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
