@@ -17,6 +17,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import java.util.Locale
 
 class MainActivity : Activity() {
 
@@ -26,6 +27,7 @@ class MainActivity : Activity() {
     private lateinit var remainingText: TextView
 
     private var receiverRegistered = false
+    private var resetAfterPermission = false
 
     companion object {
         private const val PERMISSION_REQUEST = 101
@@ -36,10 +38,14 @@ class MainActivity : Activity() {
 
     private val stepsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+
             if (intent?.action == StepCounterService.ACTION_UPDATE) {
+
                 val steps = intent.getLongExtra(
-                    StepCounterService.EXTRA_STEPS, 0L
+                    StepCounterService.EXTRA_STEPS,
+                    0L
                 )
+
                 updateDisplay(steps)
             }
         }
@@ -115,15 +121,18 @@ class MainActivity : Activity() {
         }
 
         val startButton = makeButton(
-            "START", Color.rgb(45, 100, 220)
+            "START",
+            Color.rgb(45, 100, 220)
         )
 
         val stopButton = makeButton(
-            "STOP", Color.rgb(90, 90, 110)
+            "STOP",
+            Color.rgb(90, 90, 110)
         )
 
         val resetButton = makeButton(
-            "RESET", Color.rgb(150, 55, 75)
+            "RESET",
+            Color.rgb(150, 55, 75)
         )
 
         startButton.setOnClickListener {
@@ -132,20 +141,35 @@ class MainActivity : Activity() {
 
         stopButton.setOnClickListener {
             val intent = Intent(
-                this, StepCounterService::class.java
+                this,
+                StepCounterService::class.java
             ).apply {
                 action = StepCounterService.ACTION_STOP
             }
+
             startService(intent)
         }
 
         resetButton.setOnClickListener {
-            val intent = Intent(
-                this, StepCounterService::class.java
-            ).apply {
-                action = StepCounterService.ACTION_RESET
+
+            if (
+                Build.VERSION.SDK_INT >= 29 &&
+                checkSelfPermission(
+                    Manifest.permission.ACTIVITY_RECOGNITION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                resetAfterPermission = true
+
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACTIVITY_RECOGNITION
+                    ),
+                    PERMISSION_REQUEST
+                )
+
+            } else {
+                performReset()
             }
-            ContextCompat.startForegroundService(this, intent)
         }
 
         root.addView(title)
@@ -188,18 +212,21 @@ class MainActivity : Activity() {
 
         val distance = steps * KM_PER_STEP
         val calories = steps * CALORIES_PER_STEP
-        val remaining = (DAILY_GOAL - steps).coerceAtLeast(0L)
+
+        val remaining = (
+            DAILY_GOAL - steps
+        ).coerceAtLeast(0L)
 
         stepsText.text = steps.toString()
 
         distanceText.text = String.format(
-            java.util.Locale.US,
+            Locale.US,
             "Distance: %.2f km",
             distance
         )
 
         caloriesText.text = String.format(
-            java.util.Locale.US,
+            Locale.US,
             "Calories: %.0f kcal",
             calories
         )
@@ -212,27 +239,35 @@ class MainActivity : Activity() {
 
         val needed = mutableListOf<String>()
 
-        if (Build.VERSION.SDK_INT >= 29 &&
+        if (
+            Build.VERSION.SDK_INT >= 29 &&
             checkSelfPermission(
                 Manifest.permission.ACTIVITY_RECOGNITION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            needed.add(Manifest.permission.ACTIVITY_RECOGNITION)
+            needed.add(
+                Manifest.permission.ACTIVITY_RECOGNITION
+            )
         }
 
-        if (Build.VERSION.SDK_INT >= 33 &&
+        if (
+            Build.VERSION.SDK_INT >= 33 &&
             checkSelfPermission(
                 Manifest.permission.POST_NOTIFICATIONS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            needed.add(Manifest.permission.POST_NOTIFICATIONS)
+            needed.add(
+                Manifest.permission.POST_NOTIFICATIONS
+            )
         }
 
         if (needed.isNotEmpty()) {
+
             requestPermissions(
                 needed.toTypedArray(),
                 PERMISSION_REQUEST
             )
+
         } else {
             startTracking()
         }
@@ -244,7 +279,9 @@ class MainActivity : Activity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(
-            requestCode, permissions, grantResults
+            requestCode,
+            permissions,
+            grantResults
         )
 
         if (requestCode == PERMISSION_REQUEST) {
@@ -256,7 +293,16 @@ class MainActivity : Activity() {
                 ) == PackageManager.PERMISSION_GRANTED
 
             if (activityGranted) {
-                startTracking()
+
+                if (resetAfterPermission) {
+                    resetAfterPermission = false
+                    performReset()
+                } else {
+                    startTracking()
+                }
+
+            } else {
+                resetAfterPermission = false
             }
         }
     }
@@ -264,12 +310,31 @@ class MainActivity : Activity() {
     private fun startTracking() {
 
         val intent = Intent(
-            this, StepCounterService::class.java
+            this,
+            StepCounterService::class.java
         ).apply {
             action = StepCounterService.ACTION_START
         }
 
-        ContextCompat.startForegroundService(this, intent)
+        ContextCompat.startForegroundService(
+            this,
+            intent
+        )
+    }
+
+    private fun performReset() {
+
+        val intent = Intent(
+            this,
+            StepCounterService::class.java
+        ).apply {
+            action = StepCounterService.ACTION_RESET
+        }
+
+        ContextCompat.startForegroundService(
+            this,
+            intent
+        )
     }
 
     override fun onDestroy() {
