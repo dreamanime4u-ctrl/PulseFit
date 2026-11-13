@@ -1,0 +1,90 @@
+
+#!/bin/bash
+
+mkdir -p app/src/main/res/drawable
+mkdir -p app/src/main/res/mipmap-anydpi-v26
+mkdir -p app/src/main/res/values
+mkdir -p app/src/main/res/xml
+
+cat > app/src/main/res/values/colors.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_primary">#673AB7</color>
+    <color name="purple_dark">#4527A0</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="background">#F5F5F5</color>
+</resources>
+EOF
+
+cat > app/src/main/res/values/strings.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PulseFit</string>
+</resources>
+EOF
+
+cat > app/src/main/res/values/dimens.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_medium">16dp</dimen>
+    <dimen name="padding_large">24dp</dimen>
+</resources>
+EOF
+
+cat > app/src/main/res/values/themes.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PulseFit"
+        parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/purple_primary</item>
+        <item name="android:statusBarColor">@color/purple_dark</item>
+    </style>
+</resources>
+EOF
+
+cat > app/src/main/res/drawable/bg_button.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/purple_primary"/>
+    <corners android:radius="12dp"/>
+</shape>
+EOF
+
+cat > app/src/main/res/drawable/bg_card.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/white"/>
+    <corners android:radius="16dp"/>
+</shape>
+EOF
+
+cat > app/src/main/res/drawable/ic_launcher_foreground.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,18 L64,43 L90,43 L69,59 L77,85 L54,69 L31,85 L39,59 L18,43 L44,43 Z"/>
+</vector>
+EOF
+
+cat > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/purple_primary"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
+EOF
+
+cat > app/src/main/res/xml/backup_rules.xml <<'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content/>
+EOF
+
+echo "PulseFit res folder created successfully!"
