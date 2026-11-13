@@ -1,1 +1,0 @@
-PulseFit App Icon
